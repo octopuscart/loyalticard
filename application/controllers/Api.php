@@ -161,13 +161,12 @@ class Api extends REST_Controller {
         $this->config->load('rest', TRUE);
         header('Access-Control-Allow-Origin: *');
         header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
-        $name = $this->post('displayName');
-        $email = $this->post('email');
-        $contact_no = "";
-        $password = rand(10000000, 99999999);
-        $usercode = rand(10000000, 99999999);
-        $usercode = $this->post('userId');
-        $profileimageurl = $this->post('imageUrl');
+        $name = $this->post('name');
+        $contact_no = $this->post('contact_no');
+        $email = "";
+        $password = rand(1000, 9999);
+        $usercode = rand(1000, 9999);
+        $profileimageurl = "";
         $regArray = array(
             "name" => $name,
             "email" => $email,
@@ -178,16 +177,26 @@ class Api extends REST_Controller {
             "profile_image" => $profileimageurl,
             "cardimage" => "",
         );
-        $this->db->where('email', $email);
+        $this->db->where('contact_no', $contact_no);
         $query = $this->db->get('app_user');
         $userdata = $query->row();
         if ($userdata) {
+            $regArray = array(
+                "name" => $name,
+            );
             $this->db->set($regArray);
-            $this->db->where('email', $email); //set column_name and value in which row need to update
+            $this->db->where('contact_no', $contact_no); //set column_name and value in which row need to update
             $this->db->update("app_user");
             $this->response(array("status" => "200", "userdata" => $userdata));
         } else {
             $this->db->insert('app_user', $regArray);
+            $last_id = $this->db->insert_id();
+            $updateArray = array(
+                "usercode" => "" . $usercode . $last_id,
+            );
+            $this->db->set($regArray);
+            $this->db->where('id', $last_id); //set column_name and value in which row need to update
+            $this->db->update("app_user");
             $this->response(array("status" => "200", "userdata" => $regArray));
         }
     }
@@ -249,15 +258,62 @@ class Api extends REST_Controller {
             $query = $this->db->get('app_user');
             $user = $query->row();
             $user->cardid = $value['id'];
-            $user->cardimage = base_url() . "assets/usercard/".$user->cardimage;
+            $user->cardimage = base_url() . "assets/usercard/" . $user->cardimage;
             array_push($usercarddata, $user);
         }
         return $this->response($usercarddata);
     }
-    
-    function removeUsersCard_get($cardid){
-         $this->db->where('id', $cardid);
-         $this->db->delete('card_share');
+
+    function removeUsersCard_get($cardid) {
+        $this->db->where('id', $cardid);
+        $this->db->delete('card_share');
+    }
+
+    function createPost_post() {
+        $this->config->load('rest', TRUE);
+        $class_assignment = array(
+            'title' => "",
+            'description' => $this->post('description'),
+            "datetime" => date("Y-m-d H:i:s a"),
+            'user_id' => $this->post('user_id'),
+        );
+        $this->db->insert('post', $class_assignment);
+        $last_id = $this->db->insert_id();
+        $this->response(array("last_id" => $last_id));
+    }
+
+    function uploadFileImage_post() {
+        $this->config->load('rest', TRUE);
+        header('Access-Control-Allow-Origin: *');
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+        $config['upload_path'] = 'assets/postfiles';
+        $config['allowed_types'] = '*';
+        $tableid = $this->post('file_table_id');
+        $tempfilename = rand(10000, 1000000);
+        $tempfilename = "" . $tempfilename . $tableid;
+
+        $file_newname = $tempfilename . '.jpg';
+        $config['file_name'] = $file_newname;
+        //Load upload library and initialize configuration
+        $this->load->library('upload', $config);
+        $this->upload->initialize($config);
+        if ($this->upload->do_upload('file')) {
+            $uploadData = $this->upload->data();
+            $tableid = $this->post('file_table_id');
+            $file_newname = $uploadData['file_name'];
+            $tablename = $this->post('file_tablename');
+            $filecreate = array(
+                'table_name' => $tablename,
+                'table_id' => $this->post('file_table_id'),
+                "file_name" => $file_newname,
+                'file_real_name' => $this->post('name'),
+                'file_type' => "jpg",
+                "date" => date("Y-m-d"),
+                "time" => date("H:i:s a"),
+            );
+            $this->db->insert('post_files', $filecreate);
+            $this->response($file_newname);
+        }
     }
 
 }

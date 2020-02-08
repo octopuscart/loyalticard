@@ -25,10 +25,10 @@ $islocal = false;
 
 if (strpos($baselink, '192.168')) {
     $islocal = true;
-    $baselinkmain = 'http://' . $baselinkurl . '/bkardapp';
+    $baselinkmain = 'http://' . $baselinkurl . '/loyalticard';
 } elseif (strpos($baselink, 'localhost')) {
     $islocal = true;
-    $baselinkmain = 'http://' . $baselinkurl . '/bkardapp';
+    $baselinkmain = 'http://' . $baselinkurl . '/loyalticard';
 } else {
     $baselinkmain = 'https://' . $baselinkurl . '/';
 }
