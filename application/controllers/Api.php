@@ -316,6 +316,69 @@ class Api extends REST_Controller {
         }
     }
 
+    function postDelete_get($pid) {
+        $this->db->where('id', $pid);
+        $this->db->delete('post');
+
+
+        $this->db->where('table_id', $pid);
+        $this->db->delete('post_files');
+    }
+
+    function getPostData_get() {
+        $imagepath = base_url() . "assets/postfiles/";
+        $this->db->order_by("id desc");
+        $query = $this->db->get('post');
+        $postdata = $query->result();
+        $postdataarray = array();
+        foreach ($postdata as $key => $value) {
+            $this->db->where("table_name", "post");
+            $this->db->where("table_id", $value->id);
+            $this->db->order_by("id desc");
+            $query = $this->db->get('post_files');
+            $images = $query->result();
+            $postimages = array();
+            foreach ($images as $key2 => $value2) {
+                $temp = array(
+                    "img" => $imagepath . $value2->file_name,
+                    "index" => $key2,
+                    "id" => $value2->id,
+                );
+                array_push($postimages, $temp);
+            }
+            $value->images = $postimages;
+            array_push($postdataarray, $value);
+        }
+        $this->response($postdataarray);
+    }
+
+    function getGallaryDelete_get($imgid) {
+        $this->db->where('id', $imgid);
+        $this->db->delete('post_files');
+    }
+
+    function getGallary_get() {
+        $imagepath = base_url() . "assets/postfiles/";
+
+        $this->db->where("table_name", "gallery");
+        $this->db->order_by("id desc");
+        $query = $this->db->get('post_files');
+        $gallaryImages = $query->result();
+        $img1 = array();
+        $img2 = array();
+        $img3 = array();
+        $albumData = array();
+        foreach ($gallaryImages as $key => $value) {
+            $temp = array(
+                "img" => $imagepath . $value->file_name,
+                "index" => $key,
+                "id" => $value->id,
+            );
+            array_push($img2, $temp);
+        }
+        $this->response($img2);
+    }
+
 }
 
 ?>
