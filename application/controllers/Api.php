@@ -201,6 +201,26 @@ class Api extends REST_Controller {
         }
     }
 
+    
+    function registrationAdmin_post() {
+        $this->config->load('rest', TRUE);
+        header('Access-Control-Allow-Origin: *');
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+        $password = $this->post('password');
+        $contact_no = $this->post('contact_no');
+        $this->db->where('contact_no', $contact_no);
+        $this->db->where('password', md5($password));
+        $query = $this->db->get('admin_users');
+        $userdata = $query->row();
+        if ($userdata) {
+            $this->response(array("status" => "200", "userdata" => $userdata));
+        } 
+        else{
+            $this->response(array("status" => "100", "userdata" => []));
+        }
+    }    
+    
+    
     function updateProfile_post() {
         $this->config->load('rest', TRUE);
         header('Access-Control-Allow-Origin: *');
