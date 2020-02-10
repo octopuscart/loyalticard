@@ -71,7 +71,7 @@ class Api extends REST_Controller {
         );
         $this->db->set($regArray);
         $this->db->where('reg_id', $reg_id); //set column_name and value in which row need to update
-        $this->db->update("app_user");
+        $this->db->update("gcm_registration");
     }
 
     function registerMobileGuest_post() {
