@@ -65,6 +65,15 @@ class Api extends REST_Controller {
         $this->response($result);
     }
 
+    function registerMobileUpdate_get($reg_id, $user_id) {
+        $regArray = array(
+            "user_id" => $user_id,
+        );
+        $this->db->set($regArray);
+        $this->db->where('reg_id', $reg_id); //set column_name and value in which row need to update
+        $this->db->update("app_user");
+    }
+
     function registerMobileGuest_post() {
         $this->config->load('rest', TRUE);
         header('Access-Control-Allow-Origin: *');
@@ -197,6 +206,8 @@ class Api extends REST_Controller {
             $this->db->set($updateArray);
             $this->db->where('id', $last_id); //set column_name and value in which row need to update
             $this->db->update("app_user");
+            $regArray["usercode"] = $usercode . $last_id;
+            $regArray["id"] = $last_id;
             $this->response(array("status" => "200", "userdata" => $regArray));
         }
     }
@@ -423,6 +434,11 @@ class Api extends REST_Controller {
         return array("pointlist" => $userpointdata, "credit" => $creditsum, "debitsum" => $debitsum, "totalremain" => ($creditsum - $debitsum));
     }
 
+    function getUserPoints_get($user_id) {
+        $userpoints = $this->getUserPoints($user_id);
+        $this->response($userpoints);
+    }
+
     function getUserByMobCod_get($userinput) {
         $this->db->where('contact_no', $userinput);
         $this->db->or_where('usercode', $userinput);
@@ -479,8 +495,8 @@ class Api extends REST_Controller {
         }
         $this->response(array("likes" => $totallikecount, "msg" => $msg));
     }
-    
-    function testRend_get(){
+
+    function testRend_get() {
         echo rand(1000, 9999);
     }
 
