@@ -194,7 +194,7 @@ class Api extends REST_Controller {
             $updateArray = array(
                 "usercode" => "" . $usercode . $last_id,
             );
-            $this->db->set($regArray);
+            $this->db->set($updateArray);
             $this->db->where('id', $last_id); //set column_name and value in which row need to update
             $this->db->update("app_user");
             $this->response(array("status" => "200", "userdata" => $regArray));
@@ -478,6 +478,10 @@ class Api extends REST_Controller {
             $totallikecount += 1;
         }
         $this->response(array("likes" => $totallikecount, "msg" => $msg));
+    }
+    
+    function testRend_get(){
+        echo rand(1000, 9999);
     }
 
 }
