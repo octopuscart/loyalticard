@@ -581,7 +581,7 @@ class Api extends REST_Controller {
         $points =  $this->post('points');
         $ctype = $this->post('point_type');
         $cctype = $ctype == 'Credit'?'Credited':'Debited';
-        $message = array("title" => "Loyalty Card Points $cctype", "message" => "Your card has $cctype with $points points");
+        $message = array("title" => "Loyalty Card Points $cctype", "message" => "Your Card Has Been $cctype With $points Points");
         $this->singleMessage($message, $userid);
         $this->response(array("last_id" => $last_id));
     }
