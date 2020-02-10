@@ -201,7 +201,6 @@ class Api extends REST_Controller {
         }
     }
 
-    
     function registrationAdmin_post() {
         $this->config->load('rest', TRUE);
         header('Access-Control-Allow-Origin: *');
@@ -214,13 +213,11 @@ class Api extends REST_Controller {
         $userdata = $query->row();
         if ($userdata) {
             $this->response(array("status" => "200", "userdata" => $userdata));
-        } 
-        else{
+        } else {
             $this->response(array("status" => "100", "userdata" => []));
         }
-    }    
-    
-    
+    }
+
     function updateProfile_post() {
         $this->config->load('rest', TRUE);
         header('Access-Control-Allow-Origin: *');
@@ -358,6 +355,12 @@ class Api extends REST_Controller {
             $query = $this->db->get('post_files');
             $images = $query->result();
             $postimages = array();
+
+            $this->db->where('post_id', $value->id);
+            $query = $this->db->get('post_like');
+            $totallikes = $query->result_array();
+            $totallikecount = count($totallikes);
+
             foreach ($images as $key2 => $value2) {
                 $temp = array(
                     "img" => $imagepath . $value2->file_name,
@@ -366,6 +369,7 @@ class Api extends REST_Controller {
                 );
                 array_push($postimages, $temp);
             }
+            $value->likes = $totallikecount;
             $value->images = $postimages;
             array_push($postdataarray, $value);
         }
@@ -426,8 +430,7 @@ class Api extends REST_Controller {
         $userdata = $query->row();
         if ($userdata) {
             $userpoints = $this->getUserPoints($userdata->id);
-        }
-        else{
+        } else {
             $userpoints = [];
         }
         $this->response(array("userpoints" => $userpoints, "userdata" => $userdata));
@@ -450,6 +453,31 @@ class Api extends REST_Controller {
     function deletePoints_get($pointid) {
         $this->db->where('id', $pointid);
         $this->db->delete('points');
+    }
+
+    function getPostlike_get($postid, $user_id) {
+        $this->db->where('post_id', $postid);
+        $this->db->where('user_id', $user_id);
+        $query = $this->db->get('post_like');
+        $checklikes = $query->result_array();
+
+        $this->db->where('post_id', $postid);
+        $query = $this->db->get('post_like');
+        $totallikes = $query->result_array();
+        $totallikecount = count($totallikes);
+        if ($checklikes) {
+            $msg = "yes";
+        } else {
+            $msg = "no";
+            $class_assignment = array(
+                "datetime" => date("Y-m-d H:i:s a"),
+                'user_id' => $user_id,
+                "post_id" => $postid,
+            );
+            $this->db->insert('post_like', $class_assignment);
+            $totallikecount += 1;
+        }
+        $this->response(array("likes" => $totallikecount, "msg" => $msg));
     }
 
 }
