@@ -99,7 +99,7 @@ class Api extends REST_Controller {
         } else {
             $this->db->insert('gcm_registration', $regArray);
         }
-        $this->response(array("status" => "done"));
+        $this->response(array("status" => "done", "data"=>$regArray));
     }
 
     function getUserCard_get($userid) {
