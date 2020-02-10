@@ -359,7 +359,6 @@ class Api extends REST_Controller {
 
     function getGallary_get() {
         $imagepath = base_url() . "assets/postfiles/";
-
         $this->db->where("table_name", "gallery");
         $this->db->order_by("id desc");
         $query = $this->db->get('post_files');
@@ -377,6 +376,60 @@ class Api extends REST_Controller {
             array_push($img2, $temp);
         }
         $this->response($img2);
+    }
+
+    function getUserPoints($userid) {
+        $this->db->where('user_id', $userid);
+        $this->db->order_by("id desc");
+        $query = $this->db->get('points');
+        $userpointdata = $query->result_array();
+        $creditList = [];
+        $debititList = [];
+        $creditsum = 0;
+        $debitsum = 0;
+        foreach ($userpointdata as $pkey => $pvalue) {
+            if ($pvalue['point_type'] == "Credit") {
+                array_push($creditList, $pvalue);
+                $creditsum += $pvalue["points"];
+            } else {
+                $debitsum += $pvalue["points"];
+                array_push($debititList, $pvalue);
+            }
+        }
+        return array("pointlist" => $userpointdata, "credit" => $creditsum, "debitsum" => $debitsum, "totalremain" => ($creditsum - $debitsum));
+    }
+
+    function getUserByMobCod_get($userinput) {
+        $this->db->where('contact_no', $userinput);
+        $this->db->or_where('usercode', $userinput);
+        $query = $this->db->get('app_user');
+        $userdata = $query->row();
+        if ($userdata) {
+            $userpoints = $this->getUserPoints($userdata->id);
+        }
+        else{
+            $userpoints = [];
+        }
+        $this->response(array("userpoints" => $userpoints, "userdata" => $userdata));
+    }
+
+    function createPoints_post() {
+        $this->config->load('rest', TRUE);
+        $class_assignment = array(
+            'points' => $this->post('points'),
+            'description' => $this->post('description'),
+            "datetime" => date("Y-m-d H:i:s a"),
+            'user_id' => $this->post('user_id'),
+            "point_type" => $this->post('point_type'),
+        );
+        $this->db->insert('points', $class_assignment);
+        $last_id = $this->db->insert_id();
+        $this->response(array("last_id" => $last_id));
+    }
+
+    function deletePoints_get($pointid) {
+        $this->db->where('id', $pointid);
+        $this->db->delete('points');
     }
 
 }
