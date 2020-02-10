@@ -95,7 +95,7 @@ class Api extends REST_Controller {
         $query = $this->db->get('gcm_registration');
         $regarray = $query->result_array();
         if ($regArray) {
-            
+             $this->response(array("status" => "already", "data"=>$regArray));
         } else {
             $this->db->insert('gcm_registration', $regArray);
         }
