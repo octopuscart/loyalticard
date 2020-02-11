@@ -421,6 +421,9 @@ class Api extends REST_Controller {
         );
         $this->db->insert('post', $class_assignment);
         $last_id = $this->db->insert_id();
+        $desc = $this->post('description');
+        $message = array("title" => "Loyalty Card Offer", "message" => "$desc\nNew offer now available, Hurry up.");
+        $this->broadCastMessge($message);
         $this->response(array("last_id" => $last_id));
     }
 
@@ -578,9 +581,9 @@ class Api extends REST_Controller {
         $userid = $this->post('user_id');
         $this->db->insert('points', $class_assignment);
         $last_id = $this->db->insert_id();
-        $points =  $this->post('points');
+        $points = $this->post('points');
         $ctype = $this->post('point_type');
-        $cctype = $ctype == 'Credit'?'Credited':'Debited';
+        $cctype = $ctype == 'Credit' ? 'Credited' : 'Debited';
         $message = array("title" => "Loyalty Card Points $cctype", "message" => "Your Card Has Been $cctype With $points Points");
         $this->singleMessage($message, $userid);
         $this->response(array("last_id" => $last_id));
