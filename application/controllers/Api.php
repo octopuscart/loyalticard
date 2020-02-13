@@ -216,68 +216,11 @@ class Api extends REST_Controller {
         $this->response(array("status" => "done", "data" => $regArray));
     }
 
-    function getUserCard_get($userid) {
+    function getUserList_get($userid) {
         $this->db->where('usercode', $userid);
         $query = $this->db->get('app_user');
-        $userdata = $query->row();
-        $imagepath = base_url() . "assets/usercard/" . $userdata->cardimage;
-        $this->response(array("imagelink" => $imagepath, "userdata" => $userdata));
-    }
-
-    function createUserQrCode_get($userid) {
-        $this->load->library('phpqr');
-        $this->db->where('usercode', $userid);
-        $query = $this->db->get('app_user');
-        $userdata = $query->row();
-        $filelocation = APPPATH . "../assets/userqr/" . $userdata->usercode . ".png";
-        $linkdata = site_url("Api/getUserCard/" . $userdata->usercode);
-        $this->phpqr->createcode($linkdata, $filelocation);
-        $imagepath = base_url() . "assets/userqr/" . $userdata->usercode . ".png";
-        $this->response(array("imagelink" => $imagepath));
-    }
-
-    function createUserCard_get($userid) {
-        //Set the Content Type
-        header('Content-type: image/jpeg');
-        // Create Image From Existing File
-        $jpg_image = imagecreatefromjpeg(APPPATH . "../assets/cardtemplate/card1.jpg");
-        // Allocate A Color For The Text
-        $white = imagecolorallocate($jpg_image, 255, 255, 255);
-        $blue = imagecolorallocate($jpg_image, 1, 129, 161);
-
-        // Set Path to Font File
-        $font_path1 = APPPATH . "../assets/cardtemplate/fonts/Aaargh.ttf";
-
-        $font_path2 = APPPATH . "../assets/cardtemplate/fonts/ABeeZee-Regular.otf";
-
-        // Set Text to Be Printed On Image
-        $text = "Pankaj Pathak";
-        $this->db->where('usercode', $userid);
-        $query = $this->db->get('app_user');
-        $userdata = $query->row();
-        $randid = rand(10000000, 99999999);
-        $destination_image = APPPATH . "../assets/usercard/card1" . $userdata->id . $randid . ".jpg";
-        $filelocation = APPPATH . "../assets/userqr/" . $userdata->usercode . ".png";
-        $frame = imagecreatefrompng($filelocation);
-
-        // Print Text On Image
-        imagettftext($jpg_image, 65, 0, 130, 240, $white, $font_path2, $userdata->name);
-        imagettftext($jpg_image, 40, 0, 130, 330, $blue, $font_path1, $userdata->designation);
-        imagettftext($jpg_image, 28, 0, 280, 630, $white, $font_path2, $userdata->email);
-        imagettftext($jpg_image, 28, 0, 280, 780, $white, $font_path2, $userdata->contact_no);
-        imagettftext($jpg_image, 28, 0, 280, 930, $white, $font_path2, $userdata->company);
-        imagettftext($jpg_image, 65, 0, 1250, 480, $blue, $font_path2, $userdata->company);
-        imagecopymerge($jpg_image, $frame, 1400, 680, 0, 0, 800, 800, 100);
-        // Send Image to Browser
-        imagejpeg($jpg_image, $destination_image);
-        $imagepath = base_url() . "assets/usercard/card1" . $userdata->id . $randid . ".jpg";
-
-        $this->db->set("cardimage", "card1" . $userdata->id . $randid . ".jpg");
-        $this->db->where('usercode', $userid);
-        $this->db->update("app_user");
-
-
-        $this->response(array("imagelink" => $imagepath));
+        $userlistdata = $query->result_array();
+        $this->response($userlistdata);
     }
 
     function registration_post() {
