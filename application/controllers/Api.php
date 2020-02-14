@@ -217,6 +217,7 @@ class Api extends REST_Controller {
     }
 
     function getUserList_get() {
+        $this->db->order_by("id desc");
         $query = $this->db->get('app_user');
         $userlistdata = $query->result_array();
         $this->response($userlistdata);
