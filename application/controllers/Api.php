@@ -216,8 +216,7 @@ class Api extends REST_Controller {
         $this->response(array("status" => "done", "data" => $regArray));
     }
 
-    function getUserList_get($userid) {
-        $this->db->where('usercode', $userid);
+    function getUserList_get() {
         $query = $this->db->get('app_user');
         $userlistdata = $query->result_array();
         $this->response($userlistdata);
