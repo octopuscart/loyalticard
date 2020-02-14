@@ -313,6 +313,8 @@ class Api extends REST_Controller {
         $this->db->where('contact_no', $contact_no);
         $query = $this->db->get('app_user');
         $userdata = $query->row();
+        $message = array("title" => "New Member Registration", "message" => "$name recently register on mobile app");
+        $this->broadCastMessgeAdmin($message);
         if ($userdata) {
             $regArray = array(
                 "name" => $name,
@@ -334,8 +336,6 @@ class Api extends REST_Controller {
             $regArray["id"] = $last_id;
             $this->response(array("status" => "200", "userdata" => $regArray));
         }
-        $message = array("title" => "New Member Registration", "message" => "$name recently register on mobile app");
-        $this->broadCastMessgeAdmin($message);
     }
 
     function registrationAdmin_post() {
