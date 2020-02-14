@@ -75,6 +75,30 @@ class Api extends REST_Controller {
         return $this->useCurl($url, $headers, json_encode($fields));
     }
 
+    public function androidAdmin($data, $reg_id_array) {
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $message = array(
+            'title' => $data['title'],
+            'message' => $data['message'],
+            'subtitle' => '',
+            'tickerText' => '',
+            'msgcnt' => 1,
+            'vibrate' => 1
+        );
+
+        $headers = array(
+            'Authorization: key=' . "AIzaSyBlRI5PaIZ6FJPwOdy0-hc8bTiLF5Lm0FQ",
+            'Content-Type: application/json'
+        );
+
+        $fields = array(
+            'registration_ids' => $reg_id_array,
+            'data' => $message,
+        );
+
+        return $this->useCurl($url, $headers, json_encode($fields));
+    }
+
     public function iOS($data, $devicetoken) {
         $deviceToken = $devicetoken;
         $ctx = stream_context_create();
@@ -110,7 +134,19 @@ class Api extends REST_Controller {
             return 'Message successfully delivered' . PHP_EOL;
     }
 
+    function broadCastMessgeAdmin($messagedict) {
+        $this->db->where('user_type', "Admin");
+        $query = $this->db->get('gcm_registration');
+        $regarray2 = $query->result_array();
+        $temparray = [];
+        foreach ($regarray2 as $key => $value) {
+            array_push($temparray, $value['reg_id']);
+        }
+        $this->androidAdmin($messagedict, $temparray);
+    }
+
     function broadCastMessge($messagedict) {
+//        $this->db->where('user_type', "Guest");
         $query = $this->db->get('gcm_registration');
         $regarray2 = $query->result_array();
         $temparray = [];
@@ -216,6 +252,37 @@ class Api extends REST_Controller {
         $this->response(array("status" => "done", "data" => $regArray));
     }
 
+    function registerMobileAdmin_post() {
+        $this->config->load('rest', TRUE);
+        header('Access-Control-Allow-Origin: *');
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+        $reg_id = $this->post('reg_id');
+        $model = $this->post('model');
+        $manufacturer = $this->post('manufacturer');
+        $uuid = $this->post('uuid');
+        $regArray = array(
+            "reg_id" => $reg_id,
+            "manufacturer" => $manufacturer,
+            "uuid" => $uuid,
+            "model" => $model,
+            "user_id" => "Admin",
+            "user_type" => "Admin",
+            "datetime" => date("Y-m-d H:i:s a")
+        );
+        $this->db->where('reg_id', $reg_id);
+        $query = $this->db->get('gcm_registration');
+        $regarray2 = $query->result_array();
+        if ($regarray2) {
+            $this->db->set(array("user_type" => "Admin"));
+            $this->db->where('reg_id', $reg_id); //set column_name and value in which row need to update
+            $this->db->update("gcm_registration");
+            $this->response(array("status" => "already", "data" => $regArray));
+        } else {
+            $this->db->insert('gcm_registration', $regArray);
+        }
+        $this->response(array("status" => "done", "data" => $regArray));
+    }
+
     function getUserList_get() {
         $this->db->order_by("id desc");
         $query = $this->db->get('app_user');
@@ -267,6 +334,8 @@ class Api extends REST_Controller {
             $regArray["id"] = $last_id;
             $this->response(array("status" => "200", "userdata" => $regArray));
         }
+        $message = array("title" => "New Member Registration", "message" => "$name recently register on mobile app");
+        $this->broadCastMessgeAdmin($message);
     }
 
     function registrationAdmin_post() {
@@ -559,6 +628,8 @@ class Api extends REST_Controller {
             $this->db->insert('post_like', $class_assignment);
             $totallikecount += 1;
         }
+        $message = array("title" => "New Post Like", "message" => "Post ID #$postid Now Have $totallikecount Like");
+        $this->broadCastMessgeAdmin($message);
         $this->response(array("likes" => $totallikecount, "msg" => $msg));
     }
 
