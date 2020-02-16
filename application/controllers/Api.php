@@ -53,6 +53,14 @@ class Api extends REST_Controller {
 
     public function android($data, $reg_id_array) {
         $url = 'https://fcm.googleapis.com/fcm/send';
+
+        $insertArray = array(
+            'title' => $data['title'],
+            'message' => $data['message'],
+            "datetime" => date("Y-m-d H:i:s a")
+        );
+        $this->db->insert("notification", $insertArray);
+
         $message = array(
             'title' => $data['title'],
             'message' => $data['message'],
@@ -77,6 +85,14 @@ class Api extends REST_Controller {
 
     public function androidAdmin($data, $reg_id_array) {
         $url = 'https://fcm.googleapis.com/fcm/send';
+
+        $insertArray = array(
+            'title' => $data['title'],
+            'message' => $data['message'],
+            "datetime" => date("Y-m-d H:i:s a")
+        );
+        $this->db->insert("notification", $insertArray);
+
         $message = array(
             'title' => $data['title'],
             'message' => $data['message'],
@@ -612,6 +628,10 @@ class Api extends REST_Controller {
         $query = $this->db->get('post_like');
         $checklikes = $query->result_array();
 
+        $this->db->where('id', $user_id);
+        $query = $this->db->get('app_user');
+        $userdata = $query->row();
+
         $this->db->where('post_id', $postid);
         $query = $this->db->get('post_like');
         $totallikes = $query->result_array();
@@ -628,7 +648,13 @@ class Api extends REST_Controller {
             $this->db->insert('post_like', $class_assignment);
             $totallikecount += 1;
         }
-        $message = array("title" => "New Post Like", "message" => "Post ID #$postid Now Have $totallikecount Like");
+        $title = "New Post Like";
+        if ($userdata) {
+            if ($userdata->name) {
+                $title = $userdata->name . " Has Liked Post";
+            }
+        }
+        $message = array("title" => $title, "message" => "Post ID #$postid Now Have $totallikecount Like");
         $this->broadCastMessgeAdmin($message);
         $this->response(array("likes" => $totallikecount, "msg" => $msg));
     }
