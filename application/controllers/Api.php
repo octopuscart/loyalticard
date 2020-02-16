@@ -512,8 +512,9 @@ class Api extends REST_Controller {
             $images = $query->result();
             $postimages = array();
 
-            $this->db->where('post_id', $value->id);
-            $query = $this->db->get('post_like');
+            $queryr = "SELECT pl.datetime, ap.name  as name FROM `post_like` as pl  join app_user as ap on ap.id = pl.user_id"
+                    . " where pl.post_id=$value->id group by ap.id   order by pl.id desc";
+            $query = $this->db->query($queryr);
             $totallikes = $query->result_array();
             $totallikecount = count($totallikes);
 
@@ -525,6 +526,7 @@ class Api extends REST_Controller {
                 );
                 array_push($postimages, $temp);
             }
+            $value->userlikes = $totallikes;
             $value->likes = $totallikecount;
             $value->images = $postimages;
             array_push($postdataarray, $value);
