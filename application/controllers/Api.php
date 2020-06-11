@@ -12,7 +12,7 @@ class Api extends REST_Controller {
         $this->passphrase = 'joashp';
         // (Windows Phone 8) The name of our push channel.
         $this->channelName = "joashp";
-        $this->load->model('Product_model');
+
         $this->load->library('session');
         $this->checklogin = $this->session->userdata('logged_in');
         $this->user_id = $this->session->userdata('logged_in')['login_id'];
@@ -394,29 +394,7 @@ class Api extends REST_Controller {
         $this->response(array("userdata" => $userData));
     }
 
-    function saveCards_post() {
-        $this->config->load('rest', TRUE);
-        header('Access-Control-Allow-Origin: *');
-        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
-        $profiledata = array(
-            'user_id' => $this->post('user_id'),
-            'scanner_id' => $this->post('scanner_id'),
-            'card_link' => "",
-            'datetime' => date("Y-m-d H:i:s a"),
-        );
-        $scanner_id = $this->post('scanner_id');
-        $user_id = $this->post('user_id');
-        $this->db->where('user_id', $user_id);
-        $this->db->where('scanner_id', $scanner_id);
-        $query = $this->db->get('card_share');
-        $userdata = $query->row();
-        if ($userdata) {
-            $this->response(array("msg" => "Card Already Saved."));
-        } else {
-            $this->db->insert('card_share', $profiledata);
-            $this->response(array("msg" => "Card Has Been Saved."));
-        }
-    }
+  
 
     function getUsersCard_get($user_id) {
         $this->db->where('user_id', $user_id);
