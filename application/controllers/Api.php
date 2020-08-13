@@ -564,6 +564,7 @@ class Api extends REST_Controller {
 
     function getUserByMobCod_get($userinput) {
         $this->db->where('contact_no', $userinput);
+        $this->db->or_where('usercode', $userinput);
         $query = $this->db->get('app_user');
         $userdata = $query->row();
         if ($userdata) {
