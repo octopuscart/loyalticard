@@ -394,8 +394,6 @@ class Api extends REST_Controller {
         $this->response(array("userdata" => $userData));
     }
 
-  
-
     function getUsersCard_get($user_id) {
         $this->db->where('user_id', $user_id);
         $query = $this->db->get('card_share');
@@ -566,7 +564,18 @@ class Api extends REST_Controller {
 
     function getUserByMobCod_get($userinput) {
         $this->db->where('contact_no', $userinput);
-        $this->db->or_where('usercode', $userinput);
+        $query = $this->db->get('app_user');
+        $userdata = $query->row();
+        if ($userdata) {
+            $userpoints = $this->getUserPoints($userdata->id);
+        } else {
+            $userpoints = [];
+        }
+        $this->response(array("userpoints" => $userpoints, "userdata" => $userdata));
+    }
+
+    function getUserByMobId_get($userinput) {
+        $this->db->where('id', $userinput);
         $query = $this->db->get('app_user');
         $userdata = $query->row();
         if ($userdata) {
